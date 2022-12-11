@@ -1,8 +1,9 @@
+import os
 import time
 
 import pytest
 
-from src.blockchain import Transaction, Block, Blockchain
+from src.blockchain import Transaction, Block, Blockchain, get_current_blockchain
 from src.utilities import DEFAULT_DIFFICULTY, MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
 
 
@@ -377,3 +378,62 @@ class TestBlockchain:
             assert blockchain.last_block.previous_hash == previous_block_hash
             assert blockchain.last_block.timestamp >= previous_block_timestamp
             assert blockchain.last_block.transactions == current_transactions
+
+
+def test_get_cached_blockchain_nonexistent_txt_file():
+    """Tests that get_current_blockchain() works as intended when blockchain_txt_file doesn't exist."""
+
+    test_cache_file = os.getcwd() + "/cache/nonexistent.txt"
+    cached_blockchain = get_current_blockchain(test_cache_file)
+    blockchain = Blockchain()
+
+    assert cached_blockchain.difficulty == blockchain.difficulty
+    assert cached_blockchain.unconfirmed_transactions == blockchain.unconfirmed_transactions
+    assert len(cached_blockchain.chain) == len(blockchain.chain)
+    assert cached_blockchain.last_block.index == blockchain.last_block.index
+    assert cached_blockchain.last_block.transactions == blockchain.last_block.transactions
+    assert cached_blockchain.last_block.timestamp <= blockchain.last_block.timestamp
+    assert cached_blockchain.last_block.previous_hash == blockchain.last_block.previous_hash
+    assert cached_blockchain.last_block.nonce == blockchain.last_block.nonce
+
+
+def test_get_cached_blockchain_empty_cached_file():
+    """Tests that get_current_blockchain() works as intended when blockchain_txt_file is empty."""
+
+    test_cache_file = os.getcwd() + "/cache/empty_blockchain.txt"
+    cached_blockchain = get_current_blockchain(test_cache_file)
+    blockchain = Blockchain()
+
+    assert cached_blockchain.difficulty == blockchain.difficulty
+    assert cached_blockchain.unconfirmed_transactions == blockchain.unconfirmed_transactions
+    assert len(cached_blockchain.chain) == len(blockchain.chain)
+    assert cached_blockchain.last_block.index == blockchain.last_block.index
+    assert cached_blockchain.last_block.transactions == blockchain.last_block.transactions
+    assert cached_blockchain.last_block.timestamp <= blockchain.last_block.timestamp
+    assert cached_blockchain.last_block.previous_hash == blockchain.last_block.previous_hash
+    assert cached_blockchain.last_block.nonce == blockchain.last_block.nonce
+
+
+def test_get_cached_blockchain_valid_cache_file():
+    """Tests that get_current_blockchain() works as intended when blockchain_txt_file is valid."""
+
+    test_cache_file = os.getcwd() + "/cache/test_blockchain.txt"
+    cached_blockchain = get_current_blockchain(test_cache_file)
+
+    # Values are taken from cache/test_blockchain.txt
+    assert cached_blockchain.difficulty == 3
+    assert cached_blockchain.unconfirmed_transactions == [{"sender_id": "", "receiver_id": "",
+                                                           "timestamp": 0.0, "amount": 0.0},
+                                                          {"sender_id": "", "receiver_id": "",
+                                                           "timestamp": 0.0, "amount": 0.0}]
+    assert len(cached_blockchain.chain) == 11
+    assert cached_blockchain.last_block.index == 10
+    assert cached_blockchain.last_block.transactions == [{"sender_id": "A", "receiver_id": "B",
+                                                          "timestamp": 0.0,"amount": 0.0},
+                                                         {"sender_id": "A", "receiver_id": "B",
+                                                          "timestamp": 0.0,"amount": 0.0},
+                                                         {"sender_id": "A", "receiver_id": "B",
+                                                          "timestamp": 0.0, "amount": 0.0}]
+    assert cached_blockchain.last_block.timestamp <= 1670746118.523479
+    assert cached_blockchain.last_block.previous_hash == "00003638464f452c5e9df0de5fb20fbad4b02b1b6698d8789246139efeb65965"
+    assert cached_blockchain.last_block.nonce == 1689

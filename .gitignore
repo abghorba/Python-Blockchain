@@ -59,4 +59,4 @@ target/
 .DS_Store/
 
 # Cached Blockchain
-cache/*.txt
+cache/blockchain.txt

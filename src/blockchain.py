@@ -254,8 +254,8 @@ def _parse_blockchain_from_txt_file(blockchain_txt_file=BLOCKCHAIN_CACHE_TXT_FIL
     """
     Parses blockchain stored in cache/blockchain.txt to construct a Blockchain object.
 
-    :param blockchain_txt_file:
-    :return:
+    :param blockchain_txt_file: Path to the blockchain .txt file
+    :return: parsed Blockchain object
     """
 
     with open(blockchain_txt_file, "r") as file:
@@ -266,16 +266,16 @@ def _parse_blockchain_from_txt_file(blockchain_txt_file=BLOCKCHAIN_CACHE_TXT_FIL
     # Blockchain object initializes with a genesis block, so remove it
     parsed_blockchain.chain.pop(0)
 
-    parsed_blockchain.difficulty = cached_blockchain["difficulty"]
+    parsed_blockchain.difficulty = int(cached_blockchain["difficulty"])
     parsed_blockchain.unconfirmed_transactions = cached_blockchain["unconfirmed_transactions"]
 
     for block in cached_blockchain["chain"]:
 
-        parsed_block = Block(index=block["index"],
+        parsed_block = Block(index=int(block["index"]),
                              transactions=block["transactions"],
-                             timestamp=block["timestamp"],
+                             timestamp=float(block["timestamp"]),
                              previous_hash=block["previous_hash"],
-                             nonce=block["nonce"])
+                             nonce=int(block["nonce"]))
 
         parsed_blockchain.chain.append(parsed_block)
 
@@ -286,12 +286,12 @@ def get_current_blockchain(blockchain_txt_file=BLOCKCHAIN_CACHE_TXT_FILE):
     """
     If a cached Blockchain exists, return it. Otherwise, return a newly initialized Blockchain.
 
-    :param blockchain_txt_file:
+    :param blockchain_txt_file: Path to the blockchain .txt file
     :return: Blockchain object
     """
 
     # Get cached blockchain if it exists
-    if os.path.exists(BLOCKCHAIN_CACHE_TXT_FILE) and os.path.getsize(BLOCKCHAIN_CACHE_TXT_FILE) > 0:
+    if os.path.exists(blockchain_txt_file) and os.path.getsize(blockchain_txt_file) > 0:
         return _parse_blockchain_from_txt_file(blockchain_txt_file)
 
     # There is no cached blockchain, return a new one
