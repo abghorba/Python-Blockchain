@@ -297,11 +297,18 @@ class TestBlockchain:
         blockchain = Blockchain()
         blockchain.add_new_transaction("0xFFFFFFFF", "0x1FFFFFFF", time.time(), 9.99)
 
+        previous_block_timestamp = blockchain.last_block.timestamp
+
         assert len(blockchain.unconfirmed_transactions) < MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
         assert not blockchain.mine()
+
         assert len(blockchain.chain) == 1
         assert len(blockchain.unconfirmed_transactions) == 1
+
+        # Should be the Genesis Block
         assert blockchain.last_block.index == 0
+        assert blockchain.last_block.previous_hash == "0000"
+        assert blockchain.last_block.timestamp == previous_block_timestamp
         assert len(blockchain.last_block.transactions) == 0
 
     def test_mine_with_sufficient_number_of_unconfirmed_transactions(self):
@@ -318,6 +325,7 @@ class TestBlockchain:
 
         assert len(blockchain.unconfirmed_transactions) == MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
         assert blockchain.mine()
+
         assert len(blockchain.chain) == 2
         assert len(blockchain.unconfirmed_transactions) == 0
 
@@ -344,6 +352,7 @@ class TestBlockchain:
 
             assert len(blockchain.unconfirmed_transactions) == MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
             assert blockchain.mine()
+
             assert len(blockchain.chain) == iteration + 1
             assert len(blockchain.unconfirmed_transactions) == 0
 
