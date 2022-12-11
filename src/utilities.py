@@ -1,3 +1,7 @@
+import os
+
+
+BLOCKCHAIN_CACHE_TXT_FILE = os.getcwd() + "/cache/blockchain.txt"
 DEFAULT_DIFFICULTY = 1
 MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK = 3
 

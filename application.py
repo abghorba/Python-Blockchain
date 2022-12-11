@@ -1,11 +1,12 @@
 import json
+
 from flask import Flask, request
 
-from src.blockchain import Blockchain
-from src.utilities import check_data_is_valid_transaction
+from src.blockchain import get_current_blockchain
+from src.utilities import check_data_is_valid_transaction, BLOCKCHAIN_CACHE_TXT_FILE
 
 app = Flask(__name__)
-blockchain = Blockchain()
+blockchain = get_current_blockchain(BLOCKCHAIN_CACHE_TXT_FILE)
 
 
 @app.route('/chain', methods=['GET'])
@@ -17,15 +18,16 @@ def get_chain():
 
         curl http://127.0.0.1:5000/chain
 
-    :return: JSON formatted string of the current blockchain
+    :return: JSON formatted string of the current blockchain or error message
     """
 
-    chain_data = []
+    try:
 
-    for block in blockchain.chain:
-        chain_data.append(block.__dict__)
+        return json.dumps(blockchain.__dict__(), indent=4) + '\n'
 
-    return json.dumps({"length": len(chain_data), "chain": chain_data}, indent=4) + '\n'
+    except:
+
+        return "FAILURE"
 
 
 @app.route('/send', methods=['POST'])
@@ -55,11 +57,14 @@ def add_transaction_to_blockchain():
 
         blockchain.mine()
 
+        with open(BLOCKCHAIN_CACHE_TXT_FILE, "w") as file:
+            file.write(json.dumps(blockchain.__dict__(), indent=4) + '\n')
+
         return json.dumps(transaction_details.data, indent=4) + '\n'
 
     except:
 
-        return "Failure!"
+        return "FAILURE"
 
 
 if __name__ == "__main__":

@@ -119,6 +119,23 @@ class TestBlockchain:
         assert isinstance(blockchain.last_block, Block)
         assert blockchain.last_block.index == 0
 
+    def test_blockchain_to_dict(self):
+        """Tests Blockchain.__dict__() works as intended."""
+
+        blockchain = Blockchain()
+
+        blockchain_dict = blockchain.__dict__()
+
+        chain_data = []
+
+        for block in blockchain.chain:
+            chain_data.append(block.__dict__)
+
+        assert blockchain_dict["difficulty"] == blockchain.difficulty
+        assert blockchain_dict["unconfirmed_transactions"] == blockchain.unconfirmed_transactions
+        assert blockchain_dict["length"] == len(blockchain.chain)
+        assert blockchain_dict["chain"] == chain_data
+
     def test_proof_of_work_invalid_parameters(self):
         """Tests Blockchain.proof_of_work() with invalid parameters fails as expected."""
 

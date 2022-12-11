@@ -1,8 +1,9 @@
 import json
+import os
 import time
 from hashlib import sha256
 
-from src.utilities import DEFAULT_DIFFICULTY, MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
+from src.utilities import BLOCKCHAIN_CACHE_TXT_FILE, DEFAULT_DIFFICULTY, MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
 
 
 class Transaction:
@@ -108,9 +109,22 @@ class Blockchain:
         self.difficulty = difficulty
         self.unconfirmed_transactions = []
         self.chain = []
-        self.create_genesis_block()
+        self._create_genesis_block()
 
-    def create_genesis_block(self):
+    def __dict__(self):
+        """Returns blockchain attributes as a dictionary."""
+
+        chain_data = []
+
+        for block in self.chain:
+            chain_data.append(block.__dict__)
+
+        return {"difficulty": self.difficulty,
+                "unconfirmed_transactions": self.unconfirmed_transactions,
+                "length": len(chain_data),
+                "chain": chain_data}
+
+    def _create_genesis_block(self):
         """Creates the first block, or "genesis" block in the blockchain."""
 
         genesis_block = Block(index=0, transactions=[], previous_hash="0000")
@@ -234,3 +248,51 @@ class Blockchain:
         self.unconfirmed_transactions = []
 
         return True
+
+
+def _parse_blockchain_from_txt_file(blockchain_txt_file=BLOCKCHAIN_CACHE_TXT_FILE):
+    """
+    Parses blockchain stored in cache/blockchain.txt to construct a Blockchain object.
+
+    :param blockchain_txt_file:
+    :return:
+    """
+
+    with open(blockchain_txt_file, "r") as file:
+        cached_blockchain = json.load(file)
+
+    parsed_blockchain = Blockchain()
+
+    # Blockchain object initializes with a genesis block, so remove it
+    parsed_blockchain.chain.pop(0)
+
+    parsed_blockchain.difficulty = cached_blockchain["difficulty"]
+    parsed_blockchain.unconfirmed_transactions = cached_blockchain["unconfirmed_transactions"]
+
+    for block in cached_blockchain["chain"]:
+
+        parsed_block = Block(index=block["index"],
+                             transactions=block["transactions"],
+                             timestamp=block["timestamp"],
+                             previous_hash=block["previous_hash"],
+                             nonce=block["nonce"])
+
+        parsed_blockchain.chain.append(parsed_block)
+
+    return parsed_blockchain
+
+
+def get_current_blockchain(blockchain_txt_file=BLOCKCHAIN_CACHE_TXT_FILE):
+    """
+    If a cached Blockchain exists, return it. Otherwise, return a newly initialized Blockchain.
+
+    :param blockchain_txt_file:
+    :return: Blockchain object
+    """
+
+    # Get cached blockchain if it exists
+    if os.path.exists(BLOCKCHAIN_CACHE_TXT_FILE) and os.path.getsize(BLOCKCHAIN_CACHE_TXT_FILE) > 0:
+        return _parse_blockchain_from_txt_file(blockchain_txt_file)
+
+    # There is no cached blockchain, return a new one
+    return Blockchain()
