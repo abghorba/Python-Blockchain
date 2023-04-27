@@ -3,11 +3,14 @@ import os
 import time
 from hashlib import sha256
 
-from src.utilities import BLOCKCHAIN_CACHE_TXT_FILE, DEFAULT_DIFFICULTY, MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
+from src.utilities import (
+    BLOCKCHAIN_CACHE_TXT_FILE,
+    DEFAULT_DIFFICULTY,
+    MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK,
+)
 
 
 class Transaction:
-
     def __init__(self, sender_id, receiver_id, timestamp, amount):
         """
         Constructs the Transaction instance.
@@ -39,15 +42,18 @@ class Transaction:
     def data(self):
         """Returns transaction data as a dictionary."""
 
-        return {"sender_id": self.sender_id,
-                "receiver_id": self.receiver_id,
-                "timestamp": self.timestamp,
-                "amount": self.amount}
+        return {
+            "sender_id": self.sender_id,
+            "receiver_id": self.receiver_id,
+            "timestamp": self.timestamp,
+            "amount": self.amount,
+        }
 
 
 class Block:
-
-    def __init__(self, index, transactions, previous_hash, timestamp=time.time(), nonce=0):
+    def __init__(
+        self, index, transactions, previous_hash, timestamp=time.time(), nonce=0
+    ):
         """
         Constructs the Block instance.
 
@@ -92,7 +98,6 @@ class Block:
 
 
 class Blockchain:
-
     def __init__(self, difficulty=DEFAULT_DIFFICULTY):
         """
         Constructs the Blockchain instance with a genesis block.
@@ -119,10 +124,12 @@ class Blockchain:
         for block in self.chain:
             chain_data.append(block.__dict__)
 
-        return {"difficulty": self.difficulty,
-                "unconfirmed_transactions": self.unconfirmed_transactions,
-                "length": len(chain_data),
-                "chain": chain_data}
+        return {
+            "difficulty": self.difficulty,
+            "unconfirmed_transactions": self.unconfirmed_transactions,
+            "length": len(chain_data),
+            "chain": chain_data,
+        }
 
     def _create_genesis_block(self):
         """Creates the first block, or "genesis" block in the blockchain."""
@@ -150,7 +157,7 @@ class Blockchain:
         computed_hash = block.compute_hash()
 
         # Increment nonce until the hash is valid
-        while not computed_hash.startswith('0' * self.difficulty):
+        while not computed_hash.startswith("0" * self.difficulty):
             block.nonce += 1
             computed_hash = block.compute_hash()
 
@@ -172,7 +179,7 @@ class Blockchain:
         if not isinstance(proof, str):
             raise TypeError("ERROR: param proof must be of type str")
 
-        return proof.startswith('0' * self.difficulty) and proof == block.compute_hash()
+        return proof.startswith("0" * self.difficulty) and proof == block.compute_hash()
 
     def add_block(self, block, proof):
         """
@@ -234,14 +241,19 @@ class Blockchain:
         :return: True if the block is added successfully onto the blockchain; False otherwise
         """
 
-        if len(self.unconfirmed_transactions) < MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK:
+        if (
+            len(self.unconfirmed_transactions)
+            < MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
+        ):
             return False
 
         last_block = self.last_block
 
-        new_block = Block(index=last_block.index + 1,
-                          transactions=self.unconfirmed_transactions,
-                          previous_hash=last_block.compute_hash())
+        new_block = Block(
+            index=last_block.index + 1,
+            transactions=self.unconfirmed_transactions,
+            previous_hash=last_block.compute_hash(),
+        )
 
         proof = self.proof_of_work(new_block)
         self.add_block(new_block, proof)
@@ -267,15 +279,18 @@ def _parse_blockchain_from_txt_file(blockchain_txt_file=BLOCKCHAIN_CACHE_TXT_FIL
     parsed_blockchain.chain.pop(0)
 
     parsed_blockchain.difficulty = int(cached_blockchain["difficulty"])
-    parsed_blockchain.unconfirmed_transactions = cached_blockchain["unconfirmed_transactions"]
+    parsed_blockchain.unconfirmed_transactions = cached_blockchain[
+        "unconfirmed_transactions"
+    ]
 
     for block in cached_blockchain["chain"]:
-
-        parsed_block = Block(index=int(block["index"]),
-                             transactions=block["transactions"],
-                             timestamp=float(block["timestamp"]),
-                             previous_hash=block["previous_hash"],
-                             nonce=int(block["nonce"]))
+        parsed_block = Block(
+            index=int(block["index"]),
+            transactions=block["transactions"],
+            timestamp=float(block["timestamp"]),
+            previous_hash=block["previous_hash"],
+            nonce=int(block["nonce"]),
+        )
 
         parsed_blockchain.chain.append(parsed_block)
 

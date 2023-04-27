@@ -3,12 +3,11 @@ import time
 
 import pytest
 
-from src.blockchain import Transaction, Block, Blockchain, get_current_blockchain
+from src.blockchain import Block, Blockchain, Transaction, get_current_blockchain
 from src.utilities import DEFAULT_DIFFICULTY, MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
 
 
 class TestTransaction:
-
     def test_initialize_transaction_invalid_parameters(self):
         """Tests that initializing a Transaction object with invalid parameters fails as expected."""
 
@@ -46,7 +45,6 @@ class TestTransaction:
 
 
 class TestBlock:
-
     def test_initialize_block_invalid_parameters(self):
         """Tests that initializing a Block object with invalid parameters fails as expected."""
 
@@ -64,7 +62,9 @@ class TestBlock:
 
         with pytest.raises(TypeError) as err:
             Block(0, [], "0xFFFFFFFF", "10:00PM", 0)
-            assert "ERROR: param timestamp must be of type int or float" == str(err.value)
+            assert "ERROR: param timestamp must be of type int or float" == str(
+                err.value
+            )
 
         with pytest.raises(TypeError) as err:
             Block(0, [], "0xFFFFFFFF", time.time(), "0")
@@ -93,7 +93,6 @@ class TestBlock:
 
 
 class TestBlockchain:
-
     def test_initialize_blockchain_invalid_parameters(self):
         """Tests that initializing a Blockchain object with invalid parameters fails as expected."""
 
@@ -133,7 +132,10 @@ class TestBlockchain:
             chain_data.append(block.__dict__)
 
         assert blockchain_dict["difficulty"] == blockchain.difficulty
-        assert blockchain_dict["unconfirmed_transactions"] == blockchain.unconfirmed_transactions
+        assert (
+            blockchain_dict["unconfirmed_transactions"]
+            == blockchain.unconfirmed_transactions
+        )
         assert blockchain_dict["length"] == len(blockchain.chain)
         assert blockchain_dict["chain"] == chain_data
 
@@ -156,7 +158,7 @@ class TestBlockchain:
 
         assert isinstance(computed_hash, str)
         assert len(computed_hash) > 0
-        assert computed_hash.startswith('0' * blockchain.difficulty)
+        assert computed_hash.startswith("0" * blockchain.difficulty)
         assert block.nonce > 0
 
     def test_is_valid_proof_invalid_parameters(self):
@@ -187,7 +189,7 @@ class TestBlockchain:
 
         blockchain = Blockchain()
         block = Block(1, [], "0xFFFFFFFF", time.time(), 0)
-        proof = blockchain.proof_of_work(block).replace('0', '1')
+        proof = blockchain.proof_of_work(block).replace("0", "1")
 
         assert not blockchain.is_valid_proof(block, proof)
 
@@ -223,7 +225,7 @@ class TestBlockchain:
 
         blockchain = Blockchain()
         block = Block(1, [], blockchain.last_block.compute_hash(), time.time(), 0)
-        proof = blockchain.proof_of_work(block).replace('0', '1')
+        proof = blockchain.proof_of_work(block).replace("0", "1")
 
         assert not blockchain.add_block(block, proof)
         assert blockchain.last_block is not block
@@ -246,8 +248,10 @@ class TestBlockchain:
         blockchain = Blockchain()
         iterations = 1000
 
-        for index in range(1, iterations+1):
-            block = Block(index, [], blockchain.last_block.compute_hash(), time.time(), 0)
+        for index in range(1, iterations + 1):
+            block = Block(
+                index, [], blockchain.last_block.compute_hash(), time.time(), 0
+            )
             proof = blockchain.proof_of_work(block)
 
             assert blockchain.add_block(block, proof)
@@ -260,26 +264,36 @@ class TestBlockchain:
         blockchain = Blockchain()
 
         with pytest.raises(TypeError) as err:
-            blockchain.add_new_transaction(0xFFFFFFFF, "0x1FFFFFFF", time.time(), 999.99)
+            blockchain.add_new_transaction(
+                0xFFFFFFFF, "0x1FFFFFFF", time.time(), 999.99
+            )
             assert "ERROR: param sender_id must be a str" == str(err.value)
 
         with pytest.raises(TypeError) as err:
-            blockchain.add_new_transaction("0xFFFFFFFF", 0x1FFFFFFF, time.time(), 999.99)
+            blockchain.add_new_transaction(
+                "0xFFFFFFFF", 0x1FFFFFFF, time.time(), 999.99
+            )
             assert "ERROR: param receiver_id must be a str" == str(err.value)
 
         with pytest.raises(TypeError) as err:
-            blockchain.add_new_transaction("0xFFFFFFFF", "0x1FFFFFFF", "10:00PM", 999.99)
+            blockchain.add_new_transaction(
+                "0xFFFFFFFF", "0x1FFFFFFF", "10:00PM", 999.99
+            )
             assert "ERROR: param timestamp must be a float" == str(err.value)
 
         with pytest.raises(TypeError) as err:
-            blockchain.add_new_transaction("0xFFFFFFFF", "0x1FFFFFFF", time.time(), "999.99")
+            blockchain.add_new_transaction(
+                "0xFFFFFFFF", "0x1FFFFFFF", time.time(), "999.99"
+            )
             assert "ERROR: param amount must be an int or float" == str(err.value)
 
     def test_add_new_transaction(self):
         """Tests Blockchain.add_new_transaction() is as expected."""
 
         blockchain = Blockchain()
-        transaction = blockchain.add_new_transaction("0xFFFFFFFF", "0x1FFFFFFF", time.time(), 999.99)
+        transaction = blockchain.add_new_transaction(
+            "0xFFFFFFFF", "0x1FFFFFFF", time.time(), 999.99
+        )
 
         assert isinstance(transaction, Transaction)
         assert isinstance(transaction.sender_id, str)
@@ -296,9 +310,10 @@ class TestBlockchain:
         blockchain = Blockchain()
         iterations = 1000
 
-        for iteration in range(1, iterations+1):
-
-            transaction = blockchain.add_new_transaction("0xFFFFFFFF", "0x1FFFFFFF", time.time(), 9.99 * iteration)
+        for iteration in range(1, iterations + 1):
+            transaction = blockchain.add_new_transaction(
+                "0xFFFFFFFF", "0x1FFFFFFF", time.time(), 9.99 * iteration
+            )
 
             assert isinstance(transaction, Transaction)
             assert isinstance(transaction.sender_id, str)
@@ -307,7 +322,9 @@ class TestBlockchain:
             assert isinstance(transaction.amount, (int, float))
             assert len(blockchain.unconfirmed_transactions) == iteration
             assert isinstance(blockchain.unconfirmed_transactions[iteration - 1], dict)
-            assert transaction.data == blockchain.unconfirmed_transactions[iteration - 1]
+            assert (
+                transaction.data == blockchain.unconfirmed_transactions[iteration - 1]
+            )
 
     def test_mine_with_insufficient_number_of_unconfirmed_transactions(self):
         """Tests Blockchain.mine() with an insufficient number of unconfirmed transactions returns False."""
@@ -317,7 +334,10 @@ class TestBlockchain:
 
         previous_block_timestamp = blockchain.last_block.timestamp
 
-        assert len(blockchain.unconfirmed_transactions) < MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
+        assert (
+            len(blockchain.unconfirmed_transactions)
+            < MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
+        )
         assert not blockchain.mine()
 
         assert len(blockchain.chain) == 1
@@ -335,13 +355,18 @@ class TestBlockchain:
         blockchain = Blockchain()
 
         for transaction_number in range(MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK):
-            blockchain.add_new_transaction("0xFFFFFFFF", "0x1FFFFFFF", time.time(), 9.99 * transaction_number)
+            blockchain.add_new_transaction(
+                "0xFFFFFFFF", "0x1FFFFFFF", time.time(), 9.99 * transaction_number
+            )
 
         previous_block_hash = blockchain.last_block.compute_hash()
         previous_block_timestamp = blockchain.last_block.timestamp
         current_transactions = blockchain.unconfirmed_transactions
 
-        assert len(blockchain.unconfirmed_transactions) == MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
+        assert (
+            len(blockchain.unconfirmed_transactions)
+            == MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
+        )
         assert blockchain.mine()
 
         assert len(blockchain.chain) == 2
@@ -358,17 +383,21 @@ class TestBlockchain:
         blockchain = Blockchain()
         iterations = 1000
 
-        for iteration in range(1, iterations+1):
-
+        for iteration in range(1, iterations + 1):
             for transaction_number in range(MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK):
-                blockchain.add_new_transaction("0xFFFFFFFF", "0x1FFFFFFF", time.time(), 9.99 * transaction_number)
+                blockchain.add_new_transaction(
+                    "0xFFFFFFFF", "0x1FFFFFFF", time.time(), 9.99 * transaction_number
+                )
 
             previous_block_index = blockchain.last_block.index
             previous_block_hash = blockchain.last_block.compute_hash()
             previous_block_timestamp = blockchain.last_block.timestamp
             current_transactions = blockchain.unconfirmed_transactions
 
-            assert len(blockchain.unconfirmed_transactions) == MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
+            assert (
+                len(blockchain.unconfirmed_transactions)
+                == MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
+            )
             assert blockchain.mine()
 
             assert len(blockchain.chain) == iteration + 1
@@ -388,12 +417,20 @@ def test_get_cached_blockchain_nonexistent_txt_file():
     blockchain = Blockchain()
 
     assert cached_blockchain.difficulty == blockchain.difficulty
-    assert cached_blockchain.unconfirmed_transactions == blockchain.unconfirmed_transactions
+    assert (
+        cached_blockchain.unconfirmed_transactions
+        == blockchain.unconfirmed_transactions
+    )
     assert len(cached_blockchain.chain) == len(blockchain.chain)
     assert cached_blockchain.last_block.index == blockchain.last_block.index
-    assert cached_blockchain.last_block.transactions == blockchain.last_block.transactions
+    assert (
+        cached_blockchain.last_block.transactions == blockchain.last_block.transactions
+    )
     assert cached_blockchain.last_block.timestamp <= blockchain.last_block.timestamp
-    assert cached_blockchain.last_block.previous_hash == blockchain.last_block.previous_hash
+    assert (
+        cached_blockchain.last_block.previous_hash
+        == blockchain.last_block.previous_hash
+    )
     assert cached_blockchain.last_block.nonce == blockchain.last_block.nonce
 
 
@@ -405,12 +442,20 @@ def test_get_cached_blockchain_empty_cached_file():
     blockchain = Blockchain()
 
     assert cached_blockchain.difficulty == blockchain.difficulty
-    assert cached_blockchain.unconfirmed_transactions == blockchain.unconfirmed_transactions
+    assert (
+        cached_blockchain.unconfirmed_transactions
+        == blockchain.unconfirmed_transactions
+    )
     assert len(cached_blockchain.chain) == len(blockchain.chain)
     assert cached_blockchain.last_block.index == blockchain.last_block.index
-    assert cached_blockchain.last_block.transactions == blockchain.last_block.transactions
+    assert (
+        cached_blockchain.last_block.transactions == blockchain.last_block.transactions
+    )
     assert cached_blockchain.last_block.timestamp <= blockchain.last_block.timestamp
-    assert cached_blockchain.last_block.previous_hash == blockchain.last_block.previous_hash
+    assert (
+        cached_blockchain.last_block.previous_hash
+        == blockchain.last_block.previous_hash
+    )
     assert cached_blockchain.last_block.nonce == blockchain.last_block.nonce
 
 
@@ -422,18 +467,20 @@ def test_get_cached_blockchain_valid_cache_file():
 
     # Values are taken from cache/test_blockchain.txt
     assert cached_blockchain.difficulty == 3
-    assert cached_blockchain.unconfirmed_transactions == [{"sender_id": "", "receiver_id": "",
-                                                           "timestamp": 0.0, "amount": 0.0},
-                                                          {"sender_id": "", "receiver_id": "",
-                                                           "timestamp": 0.0, "amount": 0.0}]
+    assert cached_blockchain.unconfirmed_transactions == [
+        {"sender_id": "", "receiver_id": "", "timestamp": 0.0, "amount": 0.0},
+        {"sender_id": "", "receiver_id": "", "timestamp": 0.0, "amount": 0.0},
+    ]
     assert len(cached_blockchain.chain) == 11
     assert cached_blockchain.last_block.index == 10
-    assert cached_blockchain.last_block.transactions == [{"sender_id": "A", "receiver_id": "B",
-                                                          "timestamp": 0.0,"amount": 0.0},
-                                                         {"sender_id": "A", "receiver_id": "B",
-                                                          "timestamp": 0.0,"amount": 0.0},
-                                                         {"sender_id": "A", "receiver_id": "B",
-                                                          "timestamp": 0.0, "amount": 0.0}]
+    assert cached_blockchain.last_block.transactions == [
+        {"sender_id": "A", "receiver_id": "B", "timestamp": 0.0, "amount": 0.0},
+        {"sender_id": "A", "receiver_id": "B", "timestamp": 0.0, "amount": 0.0},
+        {"sender_id": "A", "receiver_id": "B", "timestamp": 0.0, "amount": 0.0},
+    ]
     assert cached_blockchain.last_block.timestamp <= 1670746118.523479
-    assert cached_blockchain.last_block.previous_hash == "00003638464f452c5e9df0de5fb20fbad4b02b1b6698d8789246139efeb65965"
+    assert (
+        cached_blockchain.last_block.previous_hash
+        == "00003638464f452c5e9df0de5fb20fbad4b02b1b6698d8789246139efeb65965"
+    )
     assert cached_blockchain.last_block.nonce == 1689
