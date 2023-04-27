@@ -413,6 +413,8 @@ def test_get_cached_blockchain_nonexistent_txt_file():
     """Tests that get_current_blockchain() works as intended when blockchain_txt_file doesn't exist."""
 
     test_cache_file = os.getcwd() + "/cache/nonexistent.txt"
+    assert not os.path.exists(test_cache_file)
+
     cached_blockchain = get_current_blockchain(test_cache_file)
     blockchain = Blockchain()
 
