@@ -19,12 +19,7 @@ def check_data_is_valid_transaction(data):
     if len(data) != 4:
         return False
 
-    if not (
-        "sender_id" in data
-        and "receiver_id" in data
-        and "timestamp" in data
-        and "amount" in data
-    ):
+    if not ("sender_id" in data and "receiver_id" in data and "timestamp" in data and "amount" in data):
         return False
 
     if not isinstance(data["sender_id"], str):

@@ -3,11 +3,7 @@ import os
 import time
 from hashlib import sha256
 
-from src.utilities import (
-    BLOCKCHAIN_CACHE_TXT_FILE,
-    DEFAULT_DIFFICULTY,
-    MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK,
-)
+from src.utilities import BLOCKCHAIN_CACHE_TXT_FILE, DEFAULT_DIFFICULTY, MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
 
 
 class Transaction:
@@ -51,9 +47,7 @@ class Transaction:
 
 
 class Block:
-    def __init__(
-        self, index, transactions, previous_hash, timestamp=time.time(), nonce=0
-    ):
+    def __init__(self, index, transactions, previous_hash, timestamp=time.time(), nonce=0):
         """
         Constructs the Block instance.
 
@@ -241,10 +235,7 @@ class Blockchain:
         :return: True if the block is added successfully onto the blockchain; False otherwise
         """
 
-        if (
-            len(self.unconfirmed_transactions)
-            < MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK
-        ):
+        if len(self.unconfirmed_transactions) < MINIMUM_NUMBER_OF_TRANSACTIONS_PER_BLOCK:
             return False
 
         last_block = self.last_block
@@ -279,9 +270,7 @@ def _parse_blockchain_from_txt_file(blockchain_txt_file=BLOCKCHAIN_CACHE_TXT_FIL
     parsed_blockchain.chain.pop(0)
 
     parsed_blockchain.difficulty = int(cached_blockchain["difficulty"])
-    parsed_blockchain.unconfirmed_transactions = cached_blockchain[
-        "unconfirmed_transactions"
-    ]
+    parsed_blockchain.unconfirmed_transactions = cached_blockchain["unconfirmed_transactions"]
 
     for block in cached_blockchain["chain"]:
         parsed_block = Block(
