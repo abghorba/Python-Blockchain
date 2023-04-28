@@ -414,10 +414,10 @@ def test_get_cached_blockchain_empty_cached_file():
 def test_get_cached_blockchain_valid_cache_file():
     """Tests that get_current_blockchain() works as intended when blockchain_txt_file is valid."""
 
-    test_cache_file = os.getcwd() + "/cache/test_blockchain.txt"
+    test_cache_file = os.getcwd() + "/cache/sample_blockchain.txt"
     cached_blockchain = get_current_blockchain(test_cache_file)
 
-    # Values are taken from cache/test_blockchain.txt
+    # Values are taken from cache/sample_blockchain.txt
     assert cached_blockchain.difficulty == 3
     assert cached_blockchain.unconfirmed_transactions == [
         {"sender_id": "", "receiver_id": "", "timestamp": 0.0, "amount": 0.0},

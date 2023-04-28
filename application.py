@@ -1,12 +1,12 @@
 import json
+import threading
 
 from flask import Flask, request
 
 from src.blockchain import get_current_blockchain
-from src.utilities import BLOCKCHAIN_CACHE_TXT_FILE, check_data_is_valid_transaction
+from src.utilities import BLOCKCHAIN_CACHE_TXT_FILE, TEST_BLOCKCHAIN_CACHE_TXT_FILE, check_data_is_valid_transaction
 
 app = Flask(__name__)
-blockchain = get_current_blockchain(BLOCKCHAIN_CACHE_TXT_FILE)
 
 
 @app.route("/chain", methods=["GET"])
@@ -22,10 +22,15 @@ def get_chain():
     """
 
     try:
-        return json.dumps(blockchain.__dict__(), indent=4) + "\n"
+        blockchain_cache_filepath = (
+            BLOCKCHAIN_CACHE_TXT_FILE if not app.config["TESTING"] else TEST_BLOCKCHAIN_CACHE_TXT_FILE
+        )
+        blockchain = get_current_blockchain(blockchain_cache_filepath)
+
+        return json.dumps(blockchain.__dict__(), indent=4) + "\n", 200
 
     except:
-        return "FAILURE"
+        return "FAILURE", 400
 
 
 @app.route("/send", methods=["POST"])
@@ -42,13 +47,17 @@ def add_transaction_to_blockchain():
     """
 
     try:
+        blockchain_cache_filepath = (
+            BLOCKCHAIN_CACHE_TXT_FILE if not app.config["TESTING"] else TEST_BLOCKCHAIN_CACHE_TXT_FILE
+        )
+        blockchain = get_current_blockchain(blockchain_cache_filepath)
         data = request.get_json()
 
         if not check_data_is_valid_transaction(data):
             return (
                 "Invalid Transaction! Transaction must be of form:\n "
                 '{"sender_id": str, "receiver_id": str, "timestamp": float, "amount": float}\n'
-            )
+            ), 400
 
         transaction_details = blockchain.add_new_transaction(
             data["sender_id"], data["receiver_id"], data["timestamp"], data["amount"]
@@ -56,13 +65,13 @@ def add_transaction_to_blockchain():
 
         blockchain.mine()
 
-        with open(BLOCKCHAIN_CACHE_TXT_FILE, "w") as file:
+        with open(blockchain_cache_filepath, "w") as file:
             file.write(json.dumps(blockchain.__dict__(), indent=4) + "\n")
 
-        return json.dumps(transaction_details.data, indent=4) + "\n"
+        return json.dumps(transaction_details.data, indent=4) + "\n", 200
 
     except:
-        return "FAILURE"
+        return "FAILURE", 400
 
 
 if __name__ == "__main__":
